@@ -1,0 +1,32 @@
+# Environments
+.env
+.venv/
+venv/
+env/
+
+# Data
+data/
+!data/sample_images/
+.vector_cache/
+
+# Models
+models/*.pth
+checkpoints/
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# outputs
+tests/outputs/

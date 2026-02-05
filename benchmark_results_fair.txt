@@ -1,0 +1,47 @@
+Starting Benchmarks on Local Dataset (8-class) for 8 Epochs...
+
+[1/3] Benchmarking ResNet-18 (Ours)...
+
+Training ResNet-18...
+Epoch 1: Val Acc 94.64%
+Epoch 2: Val Acc 95.10%
+Epoch 3: Val Acc 95.00%
+Epoch 4: Val Acc 95.59%
+Epoch 5: Val Acc 95.31%
+Epoch 6: Val Acc 95.20%
+Epoch 7: Val Acc 95.51%
+Epoch 8: Val Acc 95.25%
+Best ResNet-18 Accuracy: 95.59%
+
+[2/3] Benchmarking ResNet-50...
+
+Training ResNet-50...
+Epoch 1: Val Acc 94.36%
+Epoch 2: Val Acc 95.36%
+Epoch 3: Val Acc 95.77%
+Epoch 4: Val Acc 95.61%
+Epoch 5: Val Acc 95.87%
+Epoch 6: Val Acc 95.54%
+Epoch 7: Val Acc 95.87%
+Epoch 8: Val Acc 95.79%
+Best ResNet-50 Accuracy: 95.87%
+
+[3/3] Benchmarking ViT-B/16...
+
+Training ViT-B/16...
+Epoch 1: Val Acc 93.41%
+Epoch 2: Val Acc 86.81%
+Epoch 3: Val Acc 94.05%
+Epoch 4: Val Acc 93.30%
+Epoch 5: Val Acc 94.66%
+Epoch 6: Val Acc 94.38%
+Epoch 7: Val Acc 94.79%
+Epoch 8: Val Acc 94.97%
+Best ViT-B/16 Accuracy: 94.97%
+
+=== Final Benchmark Results (Fair Comparison) ===
+Model           | Accuracy  
+------------------------------
+ResNet-18       | 95.59%    
+ResNet-50       | 95.87%    
+ViT-B/16        | 94.97%    

@@ -1,0 +1,1 @@
+cd /tmp2/b14902031/muen/wafer_copilot && source .venv/bin/activate && streamlit run app.py --server.port 8501
