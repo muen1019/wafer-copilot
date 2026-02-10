@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.agent.bot import get_agent, invoke_agent_with_history
+from src.agent.bot import get_agent, invoke_agent_with_history, analyze_and_report
 
 def test_multi_turn_conversation():
     """測試多輪對話"""
@@ -24,9 +24,9 @@ def test_multi_turn_conversation():
     # 模擬對話歷史
     chat_history = []
     
-    # 第一輪：分析圖片
+    # 第一輪：分析圖片 (使用 analyze_and_report 確保包含模擬數據)
     print("\n" + "-" * 40)
-    print("📝 第一輪：分析晶圓圖片")
+    print("📝 第一輪：分析晶圓圖片 (模擬 App 流程)")
     print("-" * 40)
     
     image_path = "data/sample_images/00a018e04.png"
@@ -40,19 +40,24 @@ def test_multi_turn_conversation():
     first_query = f"請分析這張晶圓圖片: {image_path}"
     print(f"👤 使用者: {first_query}")
     
-    response1 = invoke_agent_with_history(agent, first_query, chat_history)
-    print(f"\n🤖 助理:\n{response1[:500]}...")  # 只顯示前 500 字
+    # 這裡模擬 App 行為：先呼叫 analyze_and_report
+    # 這會觸發 視覺辨識 + 生產履歷模擬 + 知識庫檢索 + 報告生成
+    analysis_result = analyze_and_report(image_path)
+    report_text = analysis_result["report"]
+    
+    print(f"\n🤖 助理 (Diagnosis Report):\n{report_text[:500]}...")  # 只顯示前 500 字
     
     # 更新對話歷史
     chat_history.append({"role": "user", "content": first_query})
-    chat_history.append({"role": "assistant", "content": response1})
+    chat_history.append({"role": "assistant", "content": report_text}) # 將完整報告放入歷史
     
     # 第二輪：追問參數細節
     print("\n" + "-" * 40)
     print("📝 第二輪：追問參數細節")
     print("-" * 40)
     
-    second_query = "請詳細說明具體的參數調整步驟，包括數值範圍"
+    # 若上一輪的報告已包含 log 資訊，接下來的追問應該能參考到
+    second_query = "根據剛剛的機台日誌，請問我們應該優先檢查哪個模組？"
     print(f"👤 使用者: {second_query}")
     
     response2 = invoke_agent_with_history(agent, second_query, chat_history)

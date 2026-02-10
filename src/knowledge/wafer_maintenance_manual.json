@@ -40,17 +40,18 @@
         {
           "section_id": "CH02-S02",
           "title": "2.2 中心型瑕疵成因分析",
-          "content": "中心型瑕疵的主要成因包括：(1) CMP 研磨頭（Polishing Head）下壓力設定不當，中央壓力過大或不足；(2) 研磨液（Slurry）供給不均勻，中央區域流量異常；(3) 研磨墊（Polishing Pad）中央區域磨損或凹陷；(4) 晶圓卡盤（Chuck）真空吸附不均；(5) 前段蝕刻製程造成的薄膜厚度不均。",
-          "keywords": ["CMP", "研磨頭", "下壓力", "研磨液", "Slurry", "研磨墊", "真空吸附"]
+          "content": "中心型瑕疵的主要成因包括：(1) CMP 研磨頭（Polishing Head）下壓力設定不當，中央壓力過大或不足；(2) 研磨液（Slurry）供給不均勻，中央區域流量異常；(3) 研磨墊（Polishing Pad）中央區域磨損或凹陷；(4) 光阻塗佈機（Coater）轉速偏差（Spin Speed Deviation）導致膜厚不均；(5) 晶圓卡盤（Chuck）真空吸附不均。",
+          "keywords": ["CMP", "研磨頭", "下壓力", "研磨液", "Slurry", "研磨墊", "真空吸附", "Coater", "轉速偏差"]
         },
         {
           "section_id": "CH02-S03",
           "title": "2.3 中心型瑕疵參數調整建議",
-          "content": "針對中心型瑕疵，建議依以下順序進行參數調整：Step 1：檢查研磨頭下壓力設定，將中央區壓力從目前值降低 5-10%，建議範圍 2.5-3.5 psi；Step 2：確認研磨液流量分佈，中央噴嘴流量應為 150-200 ml/min；Step 3：檢查研磨墊使用壽命，若超過 500 片晶圓應更換；Step 4：執行卡盤平坦度校正，容許偏差 ±2μm。",
-          "keywords": ["參數調整", "下壓力", "psi", "流量", "研磨墊壽命", "卡盤校正"],
+          "content": "針對中心型瑕疵，建議依以下順序進行參數調整：Step 1：檢查研磨頭下壓力設定，將中央區壓力從目前值降低 5-10%，建議範圍 2.5-3.5 psi；Step 2：確認研磨液流量分佈，中央噴嘴流量應為 150-200 ml/min；Step 3：若為 Coater 問題，檢查轉速設定，標準轉速應控制在 1200-1500 rpm，偏差 < 0.5%；Step 4：執行卡盤平坦度校正，容許偏差 ±2μm。",
+          "keywords": ["參數調整", "下壓力", "psi", "流量", "研磨墊壽命", "卡盤校正", "Coater轉速"],
           "parameters": {
             "polishing_pressure_center": {"min": 2.5, "max": 3.5, "unit": "psi"},
             "slurry_flow_center": {"min": 150, "max": 200, "unit": "ml/min"},
+            "coater_spin_speed": {"min": 1200, "max": 1500, "tolerance": 0.5, "unit": "rpm"},
             "pad_lifetime": {"max": 500, "unit": "wafers"},
             "chuck_flatness": {"tolerance": 2, "unit": "μm"}
           }
@@ -77,19 +78,20 @@
         {
           "section_id": "CH03-S02",
           "title": "3.2 甜甜圈型瑕疵成因分析",
-          "content": "甜甜圈型瑕疵的主要成因：(1) 靜電吸盤（ESC, Electrostatic Chuck）的內外圈溫度控制不平衡；(2) 氦氣背側冷卻（He Backside Cooling）流量分配異常；(3) RF 功率的徑向分佈不均勻；(4) 製程氣體的流場分佈問題；(5) 腔體內壁沉積物不均勻導致的電漿密度變化。",
-          "keywords": ["靜電吸盤", "ESC", "氦氣冷卻", "He Backside", "RF功率", "電漿密度"]
+          "content": "甜甜圈型瑕疵的主要成因：(1) 靜電吸盤（ESC, Electrostatic Chuck）的內外圈溫度控制不平衡；(2) 氦氣背側冷卻（He Backside Cooling）流量分配異常或出現流量警示（Helium Flow Warning）；(3) RF 功率的徑向分佈不均勻；(4) 製程氣體的流場分佈問題；(5) 腔體內壁沉積物不均勻導致的電漿密度變化。",
+          "keywords": ["靜電吸盤", "ESC", "氦氣冷卻", "He Backside", "RF功率", "電漿密度", "氦氣流量"]
         },
         {
           "section_id": "CH03-S03",
           "title": "3.3 甜甜圈型瑕疵參數調整建議",
-          "content": "針對甜甜圈型瑕疵的參數調整建議：Step 1：檢查 ESC 內圈溫度設定，目標值 60±2°C；Step 2：檢查 ESC 外圈溫度設定，目標值 65±2°C，內外圈溫差應控制在 5°C 以內；Step 3：確認氦氣冷卻壓力，內圈 10±1 Torr，外圈 15±1 Torr；Step 4：若問題持續，調整 RF 功率的 Inner/Outer 比例，建議從 1:1 調整為 1.1:1。",
-          "keywords": ["ESC溫度", "氦氣壓力", "Torr", "RF功率比例"],
+          "content": "針對甜甜圈型瑕疵的參數調整建議：Step 1：檢查 ESC 內圈溫度設定，目標值 60±2°C；Step 2：檢查 ESC 外圈溫度設定，目標值 65±2°C，內外圈溫差應控制在 5°C 以內；Step 3：確認氦氣冷卻壓力，內圈 10±1 Torr，外圈 15±1 Torr，並檢查流量是否穩定；Step 4：若問題持續，調整 RF 功率的 Inner/Outer 比例，建議從 1:1 調整為 1.1:1。",
+          "keywords": ["ESC溫度", "氦氣壓力", "Torr", "RF功率比例", "流量穩定性"],
           "parameters": {
             "esc_temp_inner": {"target": 60, "tolerance": 2, "unit": "°C"},
             "esc_temp_outer": {"target": 65, "tolerance": 2, "unit": "°C"},
             "he_pressure_inner": {"target": 10, "tolerance": 1, "unit": "Torr"},
             "he_pressure_outer": {"target": 15, "tolerance": 1, "unit": "Torr"},
+            "he_flow_stability": {"fluctuation": "max 5%", "unit": "sccm"},
             "rf_inner_outer_ratio": {"default": "1:1", "adjusted": "1.1:1"}
           }
         },
@@ -115,15 +117,16 @@
         {
           "section_id": "CH04-S02",
           "title": "4.2 邊緣環狀瑕疵成因分析",
-          "content": "邊緣環狀瑕疵成因：(1) Focus Ring 磨損導致邊緣電漿分佈改變；(2) Edge Heater 功率設定不當；(3) 晶圓邊緣曝光不均勻（黃光製程）；(4) 邊緣清洗（EBR）不完全；(5) 傳送機器人 End Effector 接觸位置偏差造成邊緣損傷。",
-          "keywords": ["Focus Ring", "Edge Heater", "邊緣曝光", "EBR", "End Effector"]
+          "content": "邊緣環狀瑕疵成因：(1) Focus Ring 磨損導致邊緣電漿分佈改變；(2) Edge Heater 功率設定不當；(3) 蝕刻機台 Edge Clamp (邊緣夾具) 對位異常；(4) 邊緣清洗（EBR）不完全；(5) 傳送機器人 End Effector 接觸位置偏差造成邊緣損傷。",
+          "keywords": ["Focus Ring", "Edge Heater", "邊緣曝光", "EBR", "End Effector", "Edge Clamp"]
         },
         {
           "section_id": "CH04-S03",
           "title": "4.3 邊緣環狀瑕疵參數調整建議",
-          "content": "參數調整建議：Step 1：檢查 Focus Ring 使用時數，若超過 2000 RF-hours 應更換；Step 2：調整 Edge Heater 功率，建議範圍 50-80W；Step 3：確認 Edge Exclusion 設定為 3mm；Step 4：檢查 EBR 噴嘴角度與流量，角度應為 45°±5°，流量 30-50 ml/min；Step 5：校正機器人 End Effector 位置，偏差應小於 0.5mm。",
-          "keywords": ["Focus Ring壽命", "RF-hours", "Edge Heater功率", "Edge Exclusion", "EBR噴嘴"],
+          "content": "參數調整建議：Step 1：檢查 Edge Clamp 對位狀態，執行自動校準程序；Step 2：檢查 Focus Ring 使用時數，若超過 2000 RF-hours 應更換；Step 3：調整 Edge Heater 功率，建議範圍 50-80W；Step 4：確認 Edge Exclusion 設定為 3mm；Step 5：檢查 EBR 噴嘴角度與流量，角度應為 45°±5°，流量 30-50 ml/min；Step 6：校正機器人 End Effector 位置，偏差應小於 0.5mm。",
+          "keywords": ["Focus Ring壽命", "RF-hours", "Edge Heater功率", "Edge Exclusion", "EBR噴嘴", "Edge Clamp對位"],
           "parameters": {
+            "edge_clamp_alignment": {"action": "calibrate", "unit": "auto"},
             "focus_ring_lifetime": {"max": 2000, "unit": "RF-hours"},
             "edge_heater_power": {"min": 50, "max": 80, "unit": "W"},
             "edge_exclusion": {"target": 3, "unit": "mm"},
@@ -148,14 +151,17 @@
         {
           "section_id": "CH05-S02",
           "title": "5.2 邊緣局部瑕疵成因分析",
-          "content": "邊緣局部瑕疵成因：(1) 機器人傳送過程中的特定接觸點造成損傷；(2) 光阻塗佈時的回流不均勻；(3) 特定角度的曝光能量不均；(4) 蝕刻腔體特定位置的電漿異常；(5) 晶圓 Notch Finder 機構的機械摩擦。",
-          "keywords": ["傳送損傷", "光阻回流", "曝光能量", "Notch Finder"]
+          "content": "邊緣局部瑕疵成因：(1) 機器人傳送過程中的特定接觸點造成損傷；(2) 光阻塗佈時的回流不均勻；(3) 特定角度的曝光能量不均；(4) 去光阻機台（Stripper）噴嘴壓力不穩或阻塞；(5) 晶圓 Notch Finder 機構的機械摩擦。",
+          "keywords": ["傳送損傷", "光阻回流", "曝光能量", "Notch Finder", "Stripper", "噴嘴壓力"]
         },
         {
           "section_id": "CH05-S03",
           "title": "5.3 邊緣局部瑕疵參數調整建議",
-          "content": "排查與調整建議：Step 1：確認瑕疵位置是否與 Notch 位置有固定角度關係；Step 2：檢查傳送機器人的 Pick/Place 動作記錄；Step 3：檢查光阻塗佈機的邊緣回流（Edge Bead）設定；Step 4：若與蝕刻有關，檢查對應位置的 Shower Head 孔洞是否阻塞；Step 5：執行 Notch Finder 機構的清潔與校正。",
-          "keywords": ["Notch關聯", "Pick Place", "Edge Bead", "Shower Head", "機構校正"]
+          "content": "排查與調整建議：Step 1：確認瑕疵位置是否與 Notch 位置有固定角度關係；Step 2：檢查傳送機器人的 Pick/Place 動作記錄；Step 3：檢查光阻塗佈機的邊緣回流（Edge Bead）設定；Step 4：檢查 Stripper 噴嘴壓力，應維持在 40-50 psi，且波動小於 2 psi；Step 5：執行 Notch Finder 機構的清潔與校正。",
+          "keywords": ["Notch關聯", "Pick Place", "Edge Bead", "Shower Head", "機構校正", "Stripper噴嘴壓力"],
+          "parameters": {
+              "stripper_nozzle_pressure": {"min": 40, "max": 50, "fluctuation": 2, "unit": "psi"}
+          }
         }
       ]
     },
@@ -173,16 +179,17 @@
         {
           "section_id": "CH06-S02",
           "title": "6.2 刮痕瑕疵成因分析",
-          "content": "刮痕瑕疵成因：(1) Robot Arm 的 End Effector 有異物附著或損傷；(2) 晶圓盒（FOUP）內部 Slot 有異物或刮傷；(3) Aligner 機構接觸面有硬顆粒；(4) CMP 製程中的大顆粒 Slurry 異物；(5) 人工取放晶圓時的不當操作。此類問題應列為最高優先處理。",
-          "keywords": ["End Effector", "FOUP", "Aligner", "Slurry異物", "人工操作"]
+          "content": "刮痕瑕疵成因：(1) Robot Arm 的 End Effector 有異物附著或損傷；(2) 機械手臂傳送扭力異常（Torque Spike）導致碰撞或震動；(3) 晶圓盒（FOUP）內部 Slot 有異物或刮傷；(4) Aligner 機構接觸面有硬顆粒；(5) CMP 製程中的大顆粒 Slurry 異物。",
+          "keywords": ["End Effector", "FOUP", "Aligner", "Slurry異物", "人工操作", "Torque Spike", "扭力異常"]
         },
         {
           "section_id": "CH06-S03",
           "title": "6.3 刮痕瑕疵緊急處置程序",
-          "content": "緊急處置程序（SOP-SCR-001）：Step 1：立即停止該製程機台，避免更多晶圓受損；Step 2：檢查並清潔所有 End Effector，使用無塵布與 IPA 擦拭；Step 3：檢查 FOUP 所有 Slot，必要時更換 FOUP；Step 4：若為 CMP 刮痕，立即更換研磨液並清洗管路；Step 5：在恢復生產前，使用測試晶圓（Dummy Wafer）驗證。",
-          "keywords": ["緊急處置", "停機", "清潔", "IPA", "測試晶圓"],
+          "content": "緊急處置程序（SOP-SCR-001）：Step 1：檢查各軸扭力監測紀錄，若發現異常突波（Torque Spike），立即停機檢查碰撞點；Step 2：立即停止該製程機台，避免更多晶圓受損；Step 3：檢查並清潔所有 End Effector，使用無塵布與 IPA 擦拭；Step 4：檢查 FOUP 所有 Slot，必要時更換 FOUP；Step 5：在使用測試晶圓驗證前，需重置 Robot Home 位置。",
+          "keywords": ["緊急處置", "停機", "清潔", "IPA", "測試晶圓", "扭力監測"],
           "priority": "CRITICAL",
           "parameters": {
+            "robot_torque_monitoring": {"action": "check history", "threshold": "specs defined"},
             "end_effector_cleaning": {"method": "IPA wipe", "frequency": "immediate"},
             "slurry_replacement": {"action": "full replacement"},
             "dummy_wafer_test": {"quantity": 3, "purpose": "verification"}
@@ -210,15 +217,16 @@
         {
           "section_id": "CH07-S02",
           "title": "7.2 局部群聚瑕疵成因分析",
-          "content": "局部群聚瑕疵成因：(1) 光阻塗佈過程中的氣泡（Air Bubble）；(2) 微粒（Particle）汙染落在特定區域；(3) 光罩（Reticle）上的局部缺陷轉印；(4) 蝕刻腔體內局部電漿異常；(5) CVD/PVD 製程的 Shower Head 局部阻塞。",
-          "keywords": ["氣泡", "微粒汙染", "光罩缺陷", "Shower Head阻塞"]
+          "content": "局部群聚瑕疵成因：(1) 曝光機（Scanner）局部焦距偏移（Examples: Focus Offset Deviation）；(2) 光阻塗佈過程中的氣泡（Air Bubble）；(3) 微粒（Particle）汙染落在特定區域；(4) 光罩（Reticle）上的局部缺陷轉印；(5) CVD/PVD 製程的 Shower Head 局部阻塞。",
+          "keywords": ["氣泡", "微粒汙染", "光罩缺陷", "Shower Head阻塞", "Scanner", "焦距偏移", "Focus Offset"]
         },
         {
           "section_id": "CH07-S03",
           "title": "7.3 局部群聚瑕疵處置建議",
-          "content": "處置建議：Step 1：分析多片晶圓，確認瑕疵位置是否固定；Step 2：若位置固定，優先檢查光罩是否有缺陷；Step 3：執行塗佈機的 Auto-Clean 程序；Step 4：檢查 Shower Head 各孔洞的氣體流量均勻性；Step 5：若為隨機位置，加強環境微粒控制與機台清潔。",
-          "keywords": ["位置分析", "光罩檢查", "Auto-Clean", "流量均勻性", "微粒控制"],
+          "content": "處置建議：Step 1：檢查 Scanner 焦距控制日誌，確認 Focus Offset 是否超過規格（通常 < 0.1um）；Step 2：分析多片晶圓，確認瑕疵位置是否固定；Step 3：若位置固定，優先檢查光罩是否有缺陷；Step 4：執行塗佈機的 Auto-Clean 程序；Step 5：若為隨機位置，加強環境微粒控制與機台清潔。",
+          "keywords": ["位置分析", "光罩檢查", "Auto-Clean", "流量均勻性", "微粒控制", "Scanner Log"],
           "parameters": {
+            "scanner_focus_offset": {"max_deviation": 0.1, "unit": "μm"},
             "auto_clean_frequency": {"recommended": "every 25 wafers"},
             "shower_head_flow_uniformity": {"tolerance": "±5%"},
             "particle_monitoring": {"max_count": 10, "size": ">0.1μm", "unit": "per wafer"}
@@ -246,9 +254,10 @@
         {
           "section_id": "CH08-S03",
           "title": "8.3 隨機分佈瑕疵處置建議",
-          "content": "處置建議：Step 1：檢查無塵室壓力差與潔淨度等級，Class 100 區域微粒數應 < 100 particles/ft³；Step 2：檢查製程氣體過濾器（Gas Filter）壽命與效能；Step 3：執行化學品取樣分析，確認純度；Step 4：加強人員進出管制與著裝規範；Step 5：排查所有機械運動部件的磨損狀態。",
-          "keywords": ["潔淨度檢查", "氣體過濾器", "化學品分析", "著裝規範", "機械磨損"],
+          "content": "處置建議：Step 1：檢查機台微粒監測系統（P-Mon）歷史紀錄，確認是否有突波（Spike）大於 50 counts/hour；Step 2：檢查無塵室壓力差與潔淨度等級，Class 100 區域微粒數應 < 100 particles/ft³；Step 3：檢查製程氣體過濾器（Gas Filter）壽命，若過濾器壓差異常則需更換；Step 4：執行化學品取樣分析，確認純度；Step 5：排查所有機械運動部件的磨損狀態。",
+          "keywords": ["潔淨度檢查", "氣體過濾器", "化學品分析", "著裝規範", "機械磨損", "P-Mon", "監測突波"],
           "parameters": {
+            "p_mon_threshold": {"max": 50, "unit": "counts/hr"},
             "cleanroom_class": {"target": 100, "unit": "particles/ft³"},
             "gas_filter_lifetime": {"max": 6, "unit": "months"},
             "chemical_purity": {"min": 99.999, "unit": "%"},
@@ -271,16 +280,17 @@
         {
           "section_id": "CH09-S02",
           "title": "9.2 近全區瑕疵成因分析",
-          "content": "近全區瑕疵成因：(1) 製程參數嚴重偏離（Recipe 錯誤）；(2) 關鍵化學品或氣體用盡或嚴重汙染；(3) 腔體嚴重沉積或受損；(4) 溫度控制系統失效；(5) RF 電源異常；(6) 真空系統洩漏。",
-          "keywords": ["Recipe錯誤", "化學品用盡", "腔體沉積", "溫度失效", "RF異常", "真空洩漏"]
+          "content": "近全區瑕疵成因：(1) 顯影液（Developer）濃度嚴重不足或失效；(2) 製程參數嚴重偏離（Recipe 錯誤）；(3) 關鍵化學品或氣體用盡；(4) 腔體嚴重沉積或受損；(5) 溫度控制系統失效；(6) RF 電源異常導致電漿未點火。",
+          "keywords": ["Recipe錯誤", "化學品用盡", "腔體沉積", "溫度失效", "RF異常", "顯影液濃度", "Developer"]
         },
         {
           "section_id": "CH09-S03",
           "title": "9.3 近全區瑕疵緊急處置程序",
-          "content": "緊急處置程序（SOP-NF-001）：Step 1：立即停止機台並通報主管；Step 2：確認製程 Recipe 是否正確載入；Step 3：檢查所有化學品與氣體供應狀態；Step 4：執行腔體開蓋檢查，評估沉積狀況；Step 5：檢查溫度控制器與 RF 電源的診斷資訊；Step 6：執行真空洩漏測試（Leak Test）；Step 7：必要時啟動完整 PM（Preventive Maintenance）。",
-          "keywords": ["緊急停機", "Recipe確認", "腔體檢查", "洩漏測試", "完整PM"],
+          "content": "緊急處置程序（SOP-NF-001）：Step 1：立即停止機台並通報主管；Step 2：檢查顯影液濃度是否在規格內（Standard: 2.38% ± 0.05%）；Step 3：確認製程 Recipe 是否正確載入；Step 4：檢查所有化學品與氣體供應狀態；Step 5：執行腔體開蓋檢查，評估沉積狀況；Step 6：執行真空洩漏測試（Leak Test）；Step 7：必要時啟動完整 PM。",
+          "keywords": ["緊急停機", "Recipe確認", "腔體檢查", "洩漏測試", "完整PM", "顯影液檢查"],
           "priority": "EMERGENCY",
           "parameters": {
+            "developer_concentration": {"target": 2.38, "tolerance": 0.05, "unit": "%"},
             "leak_test_threshold": {"max": 1, "unit": "mTorr/min"},
             "chamber_inspection": {"required": true},
             "pm_trigger": {"condition": "if other steps fail"}

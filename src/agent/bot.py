@@ -6,6 +6,7 @@ Wafer Copilot - LLM Bot
 import os
 from dotenv import load_dotenv
 from src.agent.tools import analyze_wafer_defect, search_maintenance_knowledge
+from src.simulation.data_generator import get_mock_context
 
 load_dotenv()
 
@@ -128,6 +129,10 @@ def analyze_and_report(image_path: str) -> dict:
         confidence_percent = round(raw_confidence * 100, 1)
     else:
         confidence_percent = round(raw_confidence, 1)
+
+    # Step 1.5: 獲取模擬生產上下文
+    sim_context = get_mock_context(defect_type)
+    print(f"🏭 取得模擬生產數據: {sim_context['lot_id']} | {sim_context['machine_log']}")
     
     # Step 2: 獲取知識庫資訊
     # 優先使用 vision_result 中已有的建議（來自確定性章節檢索），若無則進行搜尋
@@ -141,12 +146,13 @@ def analyze_and_report(image_path: str) -> dict:
     
     # Step 3: 讓 LLM 根據工具結果生成報告（不使用 function calling）
     # 重新設計 prompt，強調引用必須對應實際來源
-    system_prompt = """你是擁有 20 年經驗的資深半導體製程與設備維護專家。你的任務是根據自動化檢測系統的數據與知識庫檢索結果，撰寫一份專業、準確且具備可執行性的瑕疵診斷報告。
+    system_prompt = """你是擁有 20 年經驗的資深半導體製程與設備維護專家。你的任務是根據自動化檢測系統的數據、生產履歷與知識庫檢索結果，撰寫一份專業、準確且具備可執行性的瑕疵診斷報告。
 
 ### ⚠️ 核心原則 (違反將導致嚴重扣分)
 1. **事實至上**：所有的參數建議 (如溫度、壓力、流量) 必須 100% 來自【知識庫檢索結果】，嚴禁依據通用知識編造數值。
-2. **精確引用**：每一項建議或成因分析後，必須標註來源編號 (如 [1], [2])，且該編號必須對應到提供的知識庫內容。
-3. **誠實不知**：若知識庫中沒有相關資訊，請明確寫出「知識庫中無此資訊」，不要強行推論。
+2. **數據整合**：務必將【機台日誌】中的異常訊息與【視覺辨識結果】進行關聯分析，不要忽略生產履歷數據。
+3. **精確引用**：每一項建議或成因分析後，必須標註來源編號 (如 [1], [2])，且該編號必須對應到提供的知識庫內容。
+4. **誠實不知**：若知識庫中沒有相關資訊，請明確寫出「知識庫中無此資訊」，不要強行推論。
 
 ### 🎯 輸出報告結構
 
@@ -157,13 +163,14 @@ def analyze_and_report(image_path: str) -> dict:
 | 瑕疵類別 | (填入提供的類別) |
 | 信心度 | (填入提供的百分比) |
 | 優先級別 | (填入提供的級別) |
+| 關聯異常機台 | (填入機台日誌中顯示異常的機台 ID，若無則填 N/A) |
 
 ### 💡 瑕疵特徵說明
 (請描述此類瑕疵在晶圓上的典型分佈特徵與可能影響的晶粒範圍。若知識庫有提到此瑕疵的判定標準，請一併列出。) [來源編號]
 
 ### 🔍 根本原因分析
-請依照邏輯推演進行分析：
-1. **現象觀察**：(描述此瑕疵通常伴隨的製程異狀)
+請綜合【機台日誌】與【知識庫】進行分析：
+1. **機台狀態關聯**：(分析機台日誌中的警示/異常是否能解釋該視覺瑕疵，務必引用機台日誌的具體訊息)
 2. **潛在環節**：(指出可能出問題的具體製程步驟，如蝕刻、鍍膜等) [來源編號]
 3. **關鍵因子**：(具體指出哪個硬體部件或參數異常導致此結果) [來源編號]
 
@@ -195,6 +202,12 @@ def analyze_and_report(image_path: str) -> dict:
 - 信心度: {confidence_percent}%
 - 優先級別: {priority}
 - Grad-CAM 路徑: {vision_result.get('gradcam_overlay', 'N/A')}
+
+【生產履歷與機台日誌】
+- Lot ID: {sim_context['lot_id']}
+- 途程機台: {', '.join(sim_context['step_history'])}
+- 批次良率: {sim_context['batch_yield']}
+- 機台日誌: {sim_context['machine_log']}
 
 【知識庫檢索結果】
 {knowledge_result}

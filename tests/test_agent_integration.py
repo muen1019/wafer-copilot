@@ -121,16 +121,16 @@ def test_tool_directly():
 
 
 def test_full_agent():
-    """測試完整 Agent 流程"""
+    """測試完整 Agent 流程 (使用 analyze_and_report)"""
     print("\n" + "=" * 70)
-    print("🤖 完整 Agent 測試（含 LLM）")
+    print("🤖 完整 Agent 測試（含 LLM 與 模擬資料整合）")
     print("=" * 70)
     
-    if not os.getenv("GROQ_API_KEY"):
-        print("❌ 未設定 GROQ_API_KEY，跳過此測試")
+    if not os.getenv("GROQ_API_KEY") and not os.getenv("GOOGLE_API_KEY"):
+        print("❌ 未設定 API KEY，跳過此測試")
         return None
     
-    from src.agent.bot import get_agent
+    from src.agent.bot import analyze_and_report
     
     # 找測試圖片
     test_image = None
@@ -146,19 +146,17 @@ def test_full_agent():
         return None
     
     print(f"\n測試圖片: {test_image}")
-    print("\n正在呼叫 Agent...")
+    print("\n正在呼叫 analyze_and_report...")
     
     try:
-        agent = get_agent()
-        
         start_time = time.time()
-        response = agent.invoke({
-            "messages": [{"role": "user", "content": f"請分析這張圖片: {test_image}"}]
-        })
+        
+        # 使用 analyze_and_report，這會包含 get_mock_context 的模擬數據
+        result = analyze_and_report(test_image)
+        
         elapsed = time.time() - start_time
         
-        # 取得最後回應
-        output = response["messages"][-1].content
+        output = result.get("report", "No report generated")
         
         print(f"\n執行時間: {elapsed:.2f} 秒")
         print("\n" + "=" * 70)
@@ -166,11 +164,16 @@ def test_full_agent():
         print("=" * 70)
         print(output)
         
+        # 簡單驗證是否包含新生產履歷資訊
+        has_log_info = "機台日誌" in output or "異常機台" in output
+        print(f"\n🔍 檢查模擬數據整合: {'✅ 成功' if has_log_info else '⚠️ 未發現機台日誌資訊'}")
+        
         return {
             "image": test_image,
             "response": output,
             "elapsed": elapsed,
-            "success": True
+            "success": True,
+            "has_log_info": has_log_info
         }
     
     except Exception as e:
