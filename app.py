@@ -12,7 +12,9 @@ from src.agent.bot import (
     invoke_followup, 
     set_llm_provider, 
     get_llm_provider,
-    get_llm_info
+    get_llm_info,
+    set_ollama_model,
+    get_ollama_model,
 )
 
 # ============================================================
@@ -51,6 +53,9 @@ if "pending_message" not in st.session_state:
 if "llm_provider" not in st.session_state:
     st.session_state.llm_provider = get_llm_provider()
 
+if "ollama_model" not in st.session_state:
+    st.session_state.ollama_model = get_ollama_model()
+
 
 # ============================================================
 # 側邊欄
@@ -62,13 +67,19 @@ with st.sidebar:
     st.markdown("### 🧠 LLM 模型選擇")
     llm_options = {
         "groq": "🟠 Groq (Llama 3.3 70B) - 免費快速",
-        "gemini": "🔷 Gemini 3 Flash Preview - 穩定準確"
+        "gemini": "🔷 Gemini 3 Flash Preview - 穩定準確",
+        "ollama": "🦙 Ollama (Gemma/Qwen 本地模型) - 本地輕量"
     }
+    
+    # 計算預設的 index
+    provider_keys = list(llm_options.keys())
+    default_index = provider_keys.index(st.session_state.llm_provider) if st.session_state.llm_provider in provider_keys else 0
+    
     selected_llm = st.selectbox(
         "選擇語言模型",
-        options=list(llm_options.keys()),
+        options=provider_keys,
         format_func=lambda x: llm_options[x],
-        index=0 if st.session_state.llm_provider == "groq" else 1,
+        index=default_index,
         key="llm_selector"
     )
     
@@ -80,6 +91,27 @@ with st.sidebar:
     else:
         # 確保 bot 模組同步
         set_llm_provider(st.session_state.llm_provider)
+
+    if st.session_state.llm_provider == "ollama":
+        ollama_model_options = {
+            "gemma4:e2b": "Gemma 4 (e2b) - 穩定平衡",
+            "qwen3.5:2b": "Qwen 3.5 (2b) - Qwen 系列推薦",
+            "llama3.2:3b": "Llama 3.2 (3b) - 追問速度快"
+        }
+        ollama_keys = list(ollama_model_options.keys())
+        ollama_default_index = (
+            ollama_keys.index(st.session_state.ollama_model)
+            if st.session_state.ollama_model in ollama_keys else 0
+        )
+        selected_ollama_model = st.selectbox(
+            "選擇 Ollama 模型",
+            options=ollama_keys,
+            format_func=lambda x: ollama_model_options[x],
+            index=ollama_default_index,
+            key="ollama_model_selector"
+        )
+        st.session_state.ollama_model = selected_ollama_model
+        set_ollama_model(selected_ollama_model)
     
     st.markdown("---")
     
@@ -238,7 +270,8 @@ if st.session_state.current_image_path:
                     response = invoke_followup(
                         user_message=pending,
                         chat_history=st.session_state.messages[:-1],
-                        diagnosis_context=st.session_state.current_defect
+                        diagnosis_context=st.session_state.current_defect,
+                        retrieval_strategy="hybrid"
                     )
                     
                     st.session_state.messages.append({

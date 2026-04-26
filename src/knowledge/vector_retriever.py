@@ -63,16 +63,27 @@ class VectorKnowledgeBase:
         # 建立新索引
         self._build_index()
         self._save_cache(cache_file)
+
+    def _rebuild_cache(self):
+        """使用目前可用的 embedding backend 重建索引快取。"""
+        cache_file = os.path.join(self.cache_dir, "vector_index.pkl")
+        self._embedding_model = None
+        self._index = None
+        self._build_index()
+        self._save_cache(cache_file)
     
     def _get_embedding_model(self):
         """延遲載入 Embedding 模型"""
         if self._embedding_model is None:
             try:
                 from sentence_transformers import SentenceTransformer
-                self._embedding_model = SentenceTransformer(self.embedding_model_name)
+                self._embedding_model = SentenceTransformer(
+                    self.embedding_model_name,
+                    local_files_only=True,
+                )
                 print(f"✅ Embedding 模型已載入: {self.embedding_model_name}")
-            except ImportError:
-                print("⚠️ sentence-transformers 未安裝，使用簡易 TF-IDF 替代")
+            except Exception as e:
+                print(f"⚠️ Embedding 模型載入失敗 ({e})，使用簡易 TF-IDF 替代")
                 self._embedding_model = SimpleTfidfEncoder()
         return self._embedding_model
     
@@ -287,12 +298,29 @@ class VectorKnowledgeBase:
         model = self._get_embedding_model()
         query_embedding = model.encode([query])
         query_embedding = np.array(query_embedding).astype('float32')
+
+        if (
+            hasattr(self, "_embeddings")
+            and len(query_embedding.shape) == 2
+            and len(self._embeddings.shape) == 2
+            and query_embedding.shape[1] != self._embeddings.shape[1]
+        ):
+            print(
+                "⚠️ 向量快取維度與目前 embedding backend 不一致，重新建立索引..."
+            )
+            self._rebuild_cache()
+            model = self._get_embedding_model()
+            query_embedding = np.array(model.encode([query])).astype('float32')
         
         if self._index is not None:
             # 使用 FAISS 檢索
             import faiss
-            faiss.normalize_L2(query_embedding)
-            scores, indices = self._index.search(query_embedding, top_k)
+            if np.linalg.norm(query_embedding) == 0:
+                scores = np.zeros((1, min(top_k, len(self._documents))), dtype="float32")
+                indices = np.arange(min(top_k, len(self._documents))).reshape(1, -1)
+            else:
+                faiss.normalize_L2(query_embedding)
+                scores, indices = self._index.search(query_embedding, top_k)
             
             results = []
             for score, idx in zip(scores[0], indices[0]):
@@ -302,8 +330,12 @@ class VectorKnowledgeBase:
                     results.append(doc)
         else:
             # 使用 NumPy cosine similarity
-            query_norm = query_embedding / np.linalg.norm(query_embedding)
-            scores = np.dot(self._embeddings, query_norm.T).flatten()
+            query_magnitude = np.linalg.norm(query_embedding)
+            if query_magnitude == 0:
+                scores = np.zeros(len(self._documents), dtype="float32")
+            else:
+                query_norm = query_embedding / query_magnitude
+                scores = np.dot(self._embeddings, query_norm.T).flatten()
             top_indices = np.argsort(scores)[::-1][:top_k]
             
             results = []

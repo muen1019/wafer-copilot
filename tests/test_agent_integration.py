@@ -166,13 +166,16 @@ def test_full_agent():
         
         # 簡單驗證是否包含新生產履歷資訊
         has_log_info = "機台日誌" in output or "異常機台" in output
+        llm_failed = "回應失敗" in output or "Connection error" in output
         print(f"\n🔍 檢查模擬數據整合: {'✅ 成功' if has_log_info else '⚠️ 未發現機台日誌資訊'}")
+        if llm_failed:
+            print("⚠️ LLM 回應失敗，完整 Agent 報告未完成驗證")
         
         return {
             "image": test_image,
             "response": output,
             "elapsed": elapsed,
-            "success": True,
+            "success": not llm_failed,
             "has_log_info": has_log_info
         }
     

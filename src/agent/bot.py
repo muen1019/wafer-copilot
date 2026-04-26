@@ -18,6 +18,29 @@ load_dotenv()
 DEFAULT_LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")
 
 _current_provider = DEFAULT_LLM_PROVIDER
+_current_ollama_model = os.getenv("OLLAMA_MODEL", "gemma4:e2b")
+_vector_kb = None
+
+
+def _get_vector_kb():
+    """延遲初始化並快取向量知識庫，避免每次追問重建造成延遲。"""
+    global _vector_kb
+    if _vector_kb is None:
+        from src.knowledge.vector_retriever import VectorKnowledgeBase
+        _vector_kb = VectorKnowledgeBase()
+    return _vector_kb
+
+
+def _create_react_agent_safe(llm, tools, prompt: str):
+    """安全建立 ReAct Agent；若模型不支援工具綁定則回傳 None。"""
+    from langgraph.prebuilt import create_react_agent
+
+    try:
+        return create_react_agent(llm, tools, prompt=prompt)
+    except NotImplementedError:
+        # 某些模型（例如部分 Ollama wrapper）不支援 bind_tools
+        print("⚠️ 目前模型不支援工具綁定，改用純 LLM 回答模式")
+        return None
 
 
 def set_llm_provider(provider: str):
@@ -25,11 +48,11 @@ def set_llm_provider(provider: str):
     設定 LLM 提供者
     
     Args:
-        provider: "groq" 或 "gemini"
+        provider: "groq", "gemini" 或 "ollama"
     """
     global _current_provider
-    if provider not in ["groq", "gemini"]:
-        raise ValueError(f"不支援的 LLM provider: {provider}，請選擇 'groq' 或 'gemini'")
+    if provider not in ["groq", "gemini", "ollama"]:
+        raise ValueError(f"不支援的 LLM provider: {provider}，請選擇 'groq', 'gemini' 或 'ollama'")
     _current_provider = provider
     print(f"✅ LLM provider 已切換為: {provider}")
 
@@ -37,6 +60,22 @@ def set_llm_provider(provider: str):
 def get_llm_provider() -> str:
     """取得目前的 LLM 提供者"""
     return _current_provider
+
+
+def set_ollama_model(model: str):
+    """設定 Ollama 模型名稱。"""
+    global _current_ollama_model
+    allowed_models = ["gemma4:e2b", "qwen3.5:2b", "llama3.2:3b"]
+    if model not in allowed_models:
+        raise ValueError(f"不支援的 Ollama 模型: {model}，請選擇 {allowed_models}")
+    _current_ollama_model = model
+    os.environ["OLLAMA_MODEL"] = model
+    print(f"✅ Ollama 模型已切換為: {model}")
+
+
+def get_ollama_model() -> str:
+    """取得目前 Ollama 模型名稱。"""
+    return _current_ollama_model
 
 
 def _get_llm():
@@ -47,6 +86,22 @@ def _get_llm():
             model="gemini-3-flash-preview",
             temperature=0,
             google_api_key=os.getenv("GOOGLE_API_KEY")
+        )
+    elif _current_provider == "ollama":
+        from langchain_ollama import ChatOllama
+        ollama_model = _current_ollama_model
+        ollama_num_ctx = int(os.getenv("OLLAMA_NUM_CTX", "4096"))
+        ollama_num_predict = int(os.getenv("OLLAMA_NUM_PREDICT", "1024"))
+        ollama_num_gpu = int(os.getenv("OLLAMA_NUM_GPU", "1"))
+        ollama_keep_alive = os.getenv("OLLAMA_KEEP_ALIVE", "10m")
+        return ChatOllama(
+            model=ollama_model,
+            temperature=0,
+            num_ctx=ollama_num_ctx,
+            num_predict=ollama_num_predict,
+            num_gpu=ollama_num_gpu,
+            keep_alive=ollama_keep_alive,
+            reasoning=False,
         )
     else:  # groq
         from langchain_groq import ChatGroq
@@ -63,6 +118,18 @@ def get_llm_info() -> dict:
             "provider": "Google",
             "model": "Gemini 3 Flash Preview",
             "icon": "🔷"
+        }
+    elif _current_provider == "ollama":
+        model_name_map = {
+            "gemma4:e2b": "Gemma 4 (e2b)",
+            "qwen3.5:2b": "Qwen 3.5 (2b)",
+            "llama3.2:3b": "Llama 3.2 (3b)",
+        }
+        ollama_model = _current_ollama_model
+        return {
+            "provider": "Ollama",
+            "model": model_name_map.get(ollama_model, ollama_model),
+            "icon": "🦙"
         }
     else:
         return {
@@ -101,6 +168,13 @@ def _extract_text_content(content) -> str:
     
     # 其他情況，嘗試轉字串
     return str(content)
+
+
+def _ensure_non_empty_text(content: str, fallback: str) -> str:
+    """避免回傳空白字串到前端。"""
+    if isinstance(content, str) and content.strip():
+        return content
+    return fallback
 
 
 def analyze_and_report(image_path: str) -> dict:
@@ -224,8 +298,20 @@ def analyze_and_report(image_path: str) -> dict:
         {"role": "user", "content": user_prompt}
     ]
     
-    response = llm.invoke(messages)
-    report_text = _extract_text_content(response.content)
+    try:
+        response = llm.invoke(messages)
+        report_text = _extract_text_content(response.content)
+    except Exception as e:
+        return {
+            "report": f"Ollama 回應失敗，請確認模型服務是否正常啟動：{e}",
+            "defect_type": defect_type,
+            "vision_result": vision_result,
+        }
+
+    report_text = _ensure_non_empty_text(
+        report_text,
+        "Ollama 回傳空內容，請重新執行或改用其他模型。"
+    )
     
     return {
         "report": report_text,
@@ -240,7 +326,6 @@ def get_agent():
     用於需要呼叫外部工具的複雜任務 (如視覺辨識、知識檢索、模擬驗證)
     """
     llm = _get_llm()
-    from langgraph.prebuilt import create_react_agent
     from src.agent.tools import analyze_wafer_defect, search_maintenance_knowledge, simulate_defect_solution
     
     tools = [analyze_wafer_defect, search_maintenance_knowledge, simulate_defect_solution]
@@ -258,7 +343,9 @@ def get_agent():
 
 用繁體中文回答。"""
     
-    agent = create_react_agent(llm, tools, prompt=system_prompt)
+    agent = _create_react_agent_safe(llm, tools, prompt=system_prompt)
+    if agent is None:
+        raise RuntimeError("目前選用的 LLM 不支援工具綁定，無法建立完整 Agent。請切換至 Groq/Gemini，或使用不需工具的流程。")
     return agent
 
 
@@ -314,8 +401,6 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
     Returns:
         LLM 的回應
     """
-    from src.knowledge.vector_retriever import VectorKnowledgeBase
-    from langgraph.prebuilt import create_react_agent
     from src.agent.tools import simulate_defect_solution
     
     llm = get_followup_llm()
@@ -326,8 +411,14 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
         messages = [{"role": "system", "content": system_msg}]
         messages.extend([{"role": m["role"], "content": m["content"]} for m in chat_history[-4:]])
         messages.append({"role": "user", "content": user_message})
-        response = llm.invoke(messages)
-        return _extract_text_content(response.content)
+        try:
+            response = llm.invoke(messages)
+            return _ensure_non_empty_text(
+                _extract_text_content(response.content),
+                "Ollama 回傳空內容，請重新執行或改用其他模型。"
+            )
+        except Exception as e:
+            return f"Ollama 回應失敗，請確認模型服務是否正常啟動：{e}"
 
     # 1. 偵測對話中涉及的所有瑕疵類型
     # 建立映射表以支援中英文與多種稱呼
@@ -378,17 +469,20 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
                 found_defects.add(val)
     
     # 2. 檢索知識庫 (混合策略：確定性章節 + 語意搜尋)
-    kb = VectorKnowledgeBase()
+    kb = _get_vector_kb()
     knowledge_context = ""
     source_docs = [] # 用於去重和排序
     seen_identifiers = set() # (title, content_snippet)
+    defect_top_k = int(os.getenv("RAG_DEFECT_TOP_K", "4"))
+    semantic_top_k_hybrid = int(os.getenv("RAG_SEMANTIC_TOP_K_HYBRID", "4"))
+    semantic_top_k_vector = int(os.getenv("RAG_SEMANTIC_TOP_K_VECTOR", "3"))
     
     # (A) 針對每個偵測到的瑕疵，撈取完整章節 (確保有參數與 SOP)
     if retrieval_strategy == "hybrid":
         for defect_type in list(found_defects)[:3]: # 限制最多處理3個，避免上下文過長
             try:
                 # 使用確定性匹配撈取
-                sol = kb.get_solution_by_defect(defect_type, top_k=6)
+                sol = kb.get_solution_by_defect(defect_type, top_k=defect_top_k)
                 if sol.get("found"):
                     for sec in sol.get("sections", []):
                         # 嘗試從標題還原章節資訊，或直接使用標題
@@ -416,7 +510,10 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
         if found_defects and retrieval_strategy == "hybrid":
             search_query = f"{' '.join(found_defects)} {user_message}"
             
-        semantic_results = kb.search(search_query, top_k=8 if retrieval_strategy == "hybrid" else 3)
+        semantic_results = kb.search(
+            search_query,
+            top_k=semantic_top_k_hybrid if retrieval_strategy == "hybrid" else semantic_top_k_vector
+        )
         if semantic_results:
             for r in semantic_results:
                 chapter = r.get('chapter', r.get('metadata', {}).get('chapter', ''))
@@ -495,7 +592,7 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
     # 建立具備「模擬工具」的 Agent
     # 這樣當使用者要求模擬時，LLM 才能真正執行 simulate_defect_solution
     tools = [simulate_defect_solution]
-    agent = create_react_agent(llm, tools, prompt=system_msg)
+    agent = _create_react_agent_safe(llm, tools, prompt=system_msg)
     
     # 構建輸入訊息 (排除 System Message，因為已包含在 agent prompt 中)
     input_messages = []
@@ -513,13 +610,42 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
         "content": user_message
     })
     
-    # 執行 Agent
-    result = agent.invoke({"messages": input_messages})
-    content = _extract_text_content(result["messages"][-1].content)
+    # 執行 Agent（若模型不支援工具綁定，退回純 LLM）
+    if agent is not None:
+        try:
+            result = agent.invoke({"messages": input_messages})
+            content = ""
+            for msg in reversed(result.get("messages", [])):
+                msg_content = getattr(msg, "content", "")
+                text = _extract_text_content(msg_content).strip()
+                if text:
+                    content = text
+                    break
+        except Exception as e:
+            err_msg = str(e).lower()
+            if "does not support tools" in err_msg or "status code: 400" in err_msg:
+                print("⚠️ 目前 Ollama 模型不支援工具調用，已自動切換為純 LLM 回答")
+                llm_messages = [{"role": "system", "content": system_msg}] + input_messages
+                try:
+                    response = llm.invoke(llm_messages)
+                    content = _extract_text_content(response.content)
+                except Exception as e:
+                    return f"Ollama 回應失敗，請確認模型服務是否正常啟動：{e}"
+            else:
+                raise
+    else:
+        llm_messages = [{"role": "system", "content": system_msg}] + input_messages
+        try:
+            response = llm.invoke(llm_messages)
+            content = _extract_text_content(response.content)
+        except Exception as e:
+            return f"Ollama 回應失敗，請確認模型服務是否正常啟動：{e}"
 
     # 後處理：若內文沒有引用任何文獻 [x]，則移除參考文獻區塊
     # 這是為了防止 LLM 在拒絕模擬或閒聊時仍習慣性加上參考文獻
     import re
+    original_content = content
+
     if "📚 參考文獻" in content:
         split_token = "📚 參考文獻"
     elif "參考文獻" in content:
@@ -540,4 +666,11 @@ def invoke_followup(user_message: str, chat_history: list, diagnosis_context: st
             # 若內文無引用，直接捨棄參考文獻部分
             content = body.strip()
 
-    return content
+    # 保護機制：避免後處理導致空字串
+    if not content.strip():
+        content = original_content.strip()
+
+    return _ensure_non_empty_text(
+        content,
+        "Ollama 回傳空內容，請重新執行或改用其他模型。"
+    )

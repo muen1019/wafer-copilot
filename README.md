@@ -75,6 +75,44 @@ streamlit run app.py
 3.  **專家對話**：針對診斷結果提問（例：「如何改善 Center 瑕疵？」）。
 4.  **數位模擬**：若瑕疵屬於可模擬類型，點擊「模擬參數測試」或直接要求 AI 模擬建議的參數。
 
+### Ollama 啟動
+若使用本地模型，請先啟動 Ollama：
+```bash
+ollama serve
+```
+
+---
+
+## 📊 實測結果
+
+測試條件：
+- 任務流程：`analyze_and_report` + `invoke_followup`（固定 `hybrid`，章節 + 語義）
+- 測試圖片：`data/raw/Donut/Donut_00167.png`
+- 量測時間：2026-04-25 (已啟用 GPU)
+
+### A. 目前 App 本地模型實測
+
+| Provider | 模型 | 初始診斷 (s) | 追問 hybrid (s) | 總時間 (s) | 備註 |
+|:--|:--|--:|--:|--:|:--|
+| Ollama | gemma4:e2b | 14.03 | 12.95 | 26.99 | 預設，速度最佳 |
+| Ollama | qwen3.5:2b | 38.56 | 33.34 | 71.91 | 避免超時卡死 |
+| Ollama | llama3.2:3b | 1.83 | 3.07 | 4.90 | 追問較快、診斷較慢 |
+
+> 註：上述 Ollama 數據為 2026-04-25 GPU 環境的既有量測紀錄；本次檢查時未重新啟動 Ollama 長駐服務重跑完整 benchmark。
+
+### B. 雲端模型參考（不受本地 GPU 綁定影響）
+
+| Provider | 模型 | 初始診斷 (s) | 追問 hybrid (s) | 總時間 (s) | 備註 |
+|:--|:--|--:|--:|--:|:--|
+| Groq | llama-3.3-70b-versatile | 2.15 | 1.40 | 3.55 | 雲端最快 |
+| Gemini | gemini-3-flash-preview | 10.42 | 9.97 | 20.38 | 雲端穩定 |
+
+### C. 本地模型建議
+
+- 目前預設本地模型為 `gemma4:e2b`。
+- `qwen3.5:2b` 與 `llama3.2:3b` 已在 UI 中提供選項；使用前需確認本機 Ollama 已下載對應模型並啟動服務。
+- 2026-04-25 的 Ollama log 顯示曾使用 RTX 4090 啟動 GPU 推論。
+
 ---
 
 ## 🧪 Digital Twin 模組說明
@@ -146,7 +184,7 @@ python tests/test_digital_twin.py
 A: Scratch (刮痕) 通常是由機械手臂摩擦或異物造成的物理損傷，這屬於「硬體故障」而非「製程參數偏差」。解決方案是更換零件或清潔，無法透過調整溫度/壓力來修復，因此不適用參數模擬。
 
 **Q: 支援哪些 LLM？**
-A: 目前原生支援 **Google Gemini** (推薦，多模態能力佳) 與 **Groq (Llama 3)** (速度快)。可透過 UI 側邊欄切換。
+A: 目前支援 **Ollama (本地: gemma4:e2b / qwen3.5:2b / llama3.2:3b)**、**Google Gemini** 與 **Groq**。可透過 UI 側邊欄切換。
 
 **Q: 如何新增一種製程模擬？**
 A: 請繼承 `src.digital_twin.simulator.BaseSimulator`，實作 `run_simulation` 方法，並在 `DigitalTwinFactory` 中註冊。

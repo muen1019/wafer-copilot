@@ -4,6 +4,7 @@ langchain
 langchain-groq
 langchain-google-genai
 langchain-community
+langchain-ollama
 langgraph
 streamlit
 pillow

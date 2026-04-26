@@ -23,7 +23,7 @@ echo "   1. 視覺辨識分類測試"
 echo "   2. Grad-CAM 熱力圖展示"
 echo "   3. 知識庫檢索測試"
 echo "   4. Agent 整合測試"
-echo "   5. 完整流程展示"
+echo "   5. 數位孿生模組測試"
 echo ""
 
 # 詢問要執行哪些測試
@@ -47,8 +47,8 @@ if [ "$run_all" = "y" ] || [ "$run_all" = "Y" ]; then
     python -m tests.test_agent_integration
     
     echo ""
-    echo "▶ 執行完整展示流程..."
-    python -m tests.demo_full_pipeline
+    echo "▶ 執行數位孿生模組測試..."
+    python -m tests.test_digital_twin
 else
     echo ""
     echo "選擇要執行的測試:"
@@ -56,7 +56,7 @@ else
     echo "   2) Grad-CAM 展示"
     echo "   3) 知識庫檢索"
     echo "   4) Agent 整合"
-    echo "   5) 完整展示流程"
+    echo "   5) 數位孿生模組"
     echo ""
     read -p "輸入編號 (可多選，如 1,3,5): " choices
     
@@ -80,8 +80,8 @@ else
                 python -m tests.test_agent_integration
                 ;;
             5)
-                echo "▶ 執行完整展示流程..."
-                python -m tests.demo_full_pipeline
+                echo "▶ 執行數位孿生模組測試..."
+                python -m tests.test_digital_twin
                 ;;
         esac
     done

@@ -4,7 +4,9 @@
 """
 
 import sys
-sys.path.insert(0, '/tmp2/b14902031/muen/wafer_copilot')
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.digital_twin.simulator import DigitalTwinFactory
 import json
