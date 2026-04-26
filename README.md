@@ -88,15 +88,15 @@ ollama serve
 測試條件：
 - 任務流程：`analyze_and_report` + `invoke_followup`（固定 `hybrid`，章節 + 語義）
 - 測試圖片：`data/raw/Donut/Donut_00167.png`
-- 量測時間：2026-04-25 (已啟用 GPU)
+- 量測時間：2026-04-26 (Ollama GPU: `OLLAMA_NUM_GPU=999`, Context: 4096)
 
 ### A. 目前 App 本地模型實測
 
 | Provider | 模型 | 初始診斷 (s) | 追問 hybrid (s) | 總時間 (s) | 備註 |
 |:--|:--|--:|--:|--:|:--|
-| Ollama | gemma4:e2b | 14.03 | 12.95 | 26.99 | 預設，速度最佳 |
-| Ollama | qwen3.5:2b | 38.56 | 33.34 | 71.91 | 速度較慢 |
-| Ollama | llama3.2:3b | 1.83 | 3.07 | 4.90 | 本地最快 |
+| Ollama | gemma4:e2b | 10.37 | 12.58 | 22.96 | 預設，報告較完整 |
+| Ollama | qwen3.5:2b | 18.58 | 7.48 | 26.06 | 中文輸出穩定 |
+| Ollama | llama3.2:3b | 7.38 | 1.28 | 8.67 | 本地最快 |
 
 
 ### B. 雲端模型參考（不受本地 GPU 綁定影響）
